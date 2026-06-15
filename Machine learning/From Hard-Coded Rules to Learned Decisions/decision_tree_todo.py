@@ -45,6 +45,11 @@ class Node:
         #compute scores
         
         #TODO 1
+        for i in range(self.X.shape[0]):
+            for j in range(self.X.shape[1]):        
+                leftIdx  = np.where(self.X[:,j] <  self.X[i,j])[0]
+                rightIdx = np.where(self.X[:,j] >= self.X[i,j])[0]
+                score[i,j] = self.H(self.y) - len(leftIdx)/self.y.shape[0]*self.H(self.y[leftIdx]) - len(rightIdx)/self.y.shape[0]*self.H(self.y[rightIdx])
         #compute score[i,j] (= information gain when splitting at sample i and feature j) for all samples i and features j
 
         #find optimal splitting rule
@@ -57,22 +62,29 @@ class Node:
             self.featureThreshold = self.X[maxSample,maxFeature]
 
             #TODO 2
+            
             #XLeft = set to all samples for which the optimal splitting rule is "True"
             #yLeft = set to all labels for which the optimal splitting rule is "True"
-            
+            leftIdx  = np.where(self.X[:,self.featureDim] <  self.featureThreshold)[0]
+            XLeft = self.X[leftIdx]
+            yLeft = self.y[leftIdx]
             self.leftChild = Node(XLeft,yLeft)
 
             #TODO 3
             #train left child node
+            self.leftChild.train(maxDepth=maxDepth,depth=depth+1)
 
             #TODO 4
             #XRight = set to all samples for which the optimal splitting rule is "False"
             #yRight = set to all labels for which the optimal splitting rule is "False"   
-            
+            rightIdx = np.where(self.X[:,self.featureDim] >= self.featureThreshold)[0]
+            XRight = self.X[rightIdx]
+            yRight = self.y[rightIdx]
             self.rightChild = Node(XRight,yRight)
 
             #TODO 5
             #train right child node
+            self.rightChild.train(maxDepth=maxDepth,depth=depth+1)
 
     # Make predictions for all samples in a data matrix
     #
@@ -86,6 +98,9 @@ class Node:
         if self.leftChild and self.rightChild:
             #TODO 6
             #fill y_hat with predictions
+            t = X[:,self.featureDim] < self.featureThreshold
+            y_hat[t] = self.leftChild.predict(X[t])
+            y_hat[~t] = self.rightChild.predict(X[~t])
             return y_hat
         else:
             return self.mode
@@ -135,6 +150,7 @@ if __name__ == '__main__':
 
         #TODO 7
         #accuracy = use yhat and data['y'] to compute the classification accuracy
+        accuracy = np.sum(yhat == data['y'])/len(data['y'])
         print('Depth: ' + str(maxDepth) + ' | Accuracy: ' + str(np.round(accuracy*100,2)) + '%')
 
         #configure axes
