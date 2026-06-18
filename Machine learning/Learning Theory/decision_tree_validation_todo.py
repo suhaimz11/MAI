@@ -108,11 +108,13 @@ if __name__ == '__main__':
     # CONSTRUCT VALIDATION SET #
     ############################
     n = X['train'].shape[0]
+    p=np.random.permutation(n)
+    nVal = np.floor(VALIDATION_FRACTION*n).astype(int)
     
-    X['val'] = None #TODO 1: construct validation set features
-    y['val'] = None #TODO 2: construct validation set labels
-    X['train'] = None #TODO 3: construct new training set features
-    y['train'] = None #TODO 4: construct new training set labels
+    X['val'] = X['train'][p[:nVal]] #TODO 1: construct validation set features
+    y['val'] = y['train'][p[:nVal]] #TODO 2: construct validation set labels
+    X['train'] = X['train'][p[nVal:]] #TODO 3: construct new training set features
+    y['train'] = y['train'][p[nVal:]] #TODO 4: construct new training set labels
     
     ############################
     ###### RUN VALIDATION ######
@@ -122,11 +124,13 @@ if __name__ == '__main__':
 
         #train model
         #TODO 5: train decision tree to depth 'maxDepth'
+        root = Node(X['train'],y['train'])
+        root.train(maxDepth=maxDepth)
 
         #compute accuracy
-        accuracy['train'][maxDepth] = None #TODO 6: calculate training accuracy at current 'maxDepth'
-        accuracy['val'][maxDepth] = None #TODO 7: calculate validation accuracy at current 'maxDepth'
+        accuracy['train'][maxDepth] = np.sum(root.predict(X['train']) == y['train']) / len(y['train']) #TODO 6: calculate training accuracy at current 'maxDepth'
+        accuracy['val'][maxDepth] = np.sum(root.predict(X['val']) == y['val']) / len(y['val']) #TODO 7: calculate validation accuracy at current 'maxDepth'
         print('Depth: ' + str(maxDepth) + ' | Accuracy: ' + str(np.round(accuracy['train'][maxDepth]*100,2)) + '% (train), ' + str(np.round(accuracy['val'][maxDepth]*100,2)) + '% (val)')
 
-    optimalDepth = None #TODO 8: extract optimal depth from 'accuracy'
+    optimalDepth = np.argmax(accuracy['val']) #TODO 8: extract optimal depth from 'accuracy'
     print('Optimal depth: ' + str(optimalDepth))
