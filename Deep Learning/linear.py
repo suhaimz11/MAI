@@ -70,9 +70,9 @@ def shallow(x, theta_hidden, theta_out):
     Returns:
         Scalar output.
     """
-    output = theta_out[0]
+    output = theta_out[0].clone()   # .clone() makes an independent copy
     for j in range(len(theta_hidden)):
-        output += theta_out[j+1] * relu_unit(x, theta_hidden[j])
+        output = output + theta_out[j+1] * relu_unit(x, theta_hidden[j])  # not +=
     return output
 
 
